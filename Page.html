@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons.css">
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+  <link href='https://fonts.googleapis.com/css?family=Alegreya+Sans+SC' rel='stylesheet' type='text/css'>
+  <?!= HtmlService.createHtmlOutputFromFile('Stylesheet').getContent(); ?>
+</head>
+<body>
+  
+  <div id='container'>
+  <div style="top:1px;right:1px;position:relative;z-index:-10;text-align:right;font-size: 0.8em;">Your E-Mail Address: <span id="getYourEmailAddress"></span></div>
+  <div id='logo'>Grade Nudge</div> 
+  <div id="uploadedFileInformation" style='display:none;' title="Gradesheet Information">
+       <form id='gradebookForm' name='gradebookForm'>
+           <fieldset>
+               <div id="emailpointsappenddiv" style="display:none;">
+                   <label for="emailappend">Domain Name to Append to E-Mail Column</label>
+                   <input type="text" name="emailappend" id="emailappend" value="" class="text ui-widget-content ui-corner-all" />
+               </div>
+               <label for="emailappend">Total Points in Class Column</label>
+               <select name="pointscollist" id="pointscollist">
+               </select>
+               <input type="hidden" name="gradebookId" id="gradebookId" value ="" />
+               <input type="hidden" name="gradebookName" id="gradebookName" value ="" />
+               <input type="hidden" name="studentNameCol" id="studentNameCol" value ="" />
+               <input type="hidden" name="studentEMailCol" id="studentEMailCol" value ="" />
+               <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+           </fieldset>
+       </form>
+  </div>
+  <div id="supportedFileUploads" style='display:none;' title="Supported File Uploads">
+  <p>
+    As an alternative to using a Google Spreadsheet gradebook, Grade Nudge can read standard CSV gradebook exports from Canvas, Blackboard, and Moodle (others coming soon).  Note that you must be using a points grading scheme and the default column names.  To use this feature, drag the exported gradebook file from your computer and drop it on the files section of the Grade Nudge interface.    
+  </p>
+  </div>
+  <div id="assignmentPointsDialog" style='display:none;' title="Assignment and Total Points">
+  <p>
+    The gradebook file contains the total number of points each student has earned in the class but not how many points are possible on the upcoming assignment or in the course as of this date.  'Assignment points' is the point value of the upcoming assignment for which you are sending the nudge message.  The 'total points in the class' is the total number of points possible as of this point in the term; it <i>does not</i> include the future points that will be added to the gradebook from the upcoming assignment (or other future assignments).
+  </p>
+  </div>
+  <div id="helpFilesDialog" style='display:none;' title="Files">
+  <p>
+    The gradebook file has three required pieces of information for each student: name, email, and total number of points earned in the class.    This information can be detected from common LMS systems such as Canvas, Blackboard or Moodle.  Alternatively, a Google Spreadsheet can be created with three columns: 'name', 'email', and 'points'.  
+  </p>
+  <p>
+    The gradescale file contains two columns: 'grade' and 'threshold'. Where grade is the letter grade (e.g. "A-") and threshold is the lower bound to earn that grade.  You can create a gradescale from scratch in Google Spreadsheets.  However, it is recommended that you click the 'create default gradescale' button below and modify the file if necessary.
+  </p>
+  </div>
+  <div id="helpDeliveryDialog" style='display:none;' title="Delivery">
+  <p>
+    The grade nudge message can be delivered in four different ways: the instructor can send the nudge via e-mail without the assignment (the most commonly used feature), share an assignment with each student as a Google Drive document, attach the assignment as a PDF, or save the nudge to a column within the gradebook spreadsheet. 
+  </p>
+  <p>
+    Selecting either to share a Google Drive document or attach a PDF will require that the instructor select a Google Drive document to use as a homework template (this file will be duplicated and shared with each student). Saving the nudge to the gradebook allows the instructor to use some alternative means of delivering the nudge beyond what the program provides; this option does not send out an e-mail.
+  </p>
+  </div>
+  <div class="error" style='display:none;' id='error'></div>
+  <div class="notice" style='display:none;' id='notice'></div>
+  <form id='form' name='form'>
+  
+  <div id='coldiv'>
+    <input type="hidden" name="SavedstudentNameCol" id="SavedstudentNameCol" value ="" />
+    <input type="hidden" name="SavedstudentEMailCol" id="SavedstudentEMailCol" value ="" />
+    <input type="hidden" name="Savedemailappend" id="Savedemailappend" value ="" />
+    <input type="hidden" name="Savedpointscollist" id="Savedpointscollist" value ="" />
+    <div class='col'>
+    <div class='delivery'>
+      <span class='title'><a href="#" id="helpDelivery" title="Click for more information">Delivery</a></span>
+      <input type='radio' name='delivery' id='emailOnly' value='email' checked /><label for='emailOnly'>Send nudge via E-Mail without the assignment</label>
+      <br /><input type='radio' name='delivery' id='shareDocument' value='share' /><label for='shareDocument'>Share the Google Drive document with the student</label>
+      <br /><input type='radio' name='delivery' id='sendPDF' value='PDF' /><label for='sendPDF'>Send a PDF of the document in the E-Mail</label>
+      <br /><input type='radio' name='delivery' id='noemail' value='noemail' /><label for='noemail'>Save nudge to 'message' column of gradebook</label>
+    </div>
+    
+    <div class='files' id="filesRegion">
+       <span class='title'><a href="#" id="helpFiles" title="Click for more information">Files</a> - Select or <a href='#' id='helpDrop' title="Click for more information">Drop a Gradebook File</a></span> 
+       <div id='templateDiv'>
+           <button name='templateBut' id='templateBut' type="button">Select Homework Template</button><div id='templateInfo'></div><input type='hidden' id='template' name='template' value='' />
+       </div>
+       <button name='gradebookBut' id='gradebookBut' type="button">Select Gradebook</button><div id='gradebookInfo'></div><input type='hidden' id='gradebook' name='gradebook' value='' />
+       <button name='gradescaleBut' id='gradescaleBut' type="button">Select Gradescale</button><div id='gradescaleInfo'> or <a href='#' id='downloadgradescaledefault'>create default gradescale</a></div><input type='hidden' id='gradescale' name='gradescale' value='' />
+    </div>
+    
+    <div class='assignment'>
+       <span class='title'><a href="#" id="avbut" title="Click for more information">Assignment Value</a></span>
+       <p><label for='points'>Assignment Points: </label><input type='number' id='points' name='points' step='0.01' /></p>
+       <p><label for='tpoints'>Total Points in the Class: </label><input type='number' id='tpoints' step='0.01' name='tpoints' /></p>
+    </div>
+    
+    <div class='nudgemes'>
+       <span class='title'>Nudge Message Options</span>
+       <p><input type='checkbox' class='messageoptions' id='incomplete' name='incomplete' checked /><label for='incomplete'>Calculate incomplete score</label></p>
+       <p><input type='checkbox' class='messageoptions' id='gradeup' name='gradeup' checked /><label for='gradeup'>Calculate next grade up</label></p>
+       <p><input type='checkbox' class='messageoptions' id='gradedown' name='gradedown' checked /><label for='gradedown'>Calculate next grade down</label></p>
+       <p><input type='checkbox' class='messageoptions' id='percentage' name='percentage' checked /><label for='percentage'>Calculate percent scores</label></p>
+    </div>
+    
+    
+    </div>
+    <div class='col'>
+    <div class='message'>
+       <span class='title'>E-Mail</span>
+       <input type='text' name='subjectline' id='subjectline' placeholder='E-Mail Subject Line' />
+       <textarea name='emailbody' id='emailbody' placeholder='Body of E-Mail Message'></textarea>
+    </div>
+    
+    
+    <div class='advanced'>
+       <div id='adv' name='adv'>
+          <p>Limit the gradebook range from:</p>
+          <p><input type='number' name='lStart' id='lStart' placeholder='All' /> to <input type='number' name='lEnd' id='lEnd' placeholder='All' /></p>
+       </div>
+       <a href='#' id='advset'>Show advanced settings...</a>
+    </div>
+    </div>
+    <div class='col'>
+        <span class='title'>Preview</span>
+        <div id='greating' class='nudge'>Hi [Name],</div>
+        <div id='emailbodymes' class='nudge'></div>
+        <div id='nudgemes' class='nudge'></div>
+    </div>
+  </div>
+  <a href="https://bensresearch.com/nudge" target="_blank">Help and Documentation &gt;</a>
+  <div style='float:right;' id='submitButton'>
+       <input type='submit' value='Send Nudge Messages' />
+  </div>
+  </form>
+  </div>
+  <?!= HtmlService.createHtmlOutputFromFile('JavaScript').getContent(); ?>
+  <script src="https://apis.google.com/js/api.js"></script>
+  <script>google.load("picker", "1", {callback:function(){ pickerApiLoaded =!0; }});</script>
+</body>
+</html>

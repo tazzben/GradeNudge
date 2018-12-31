@@ -1,0 +1,752 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+
+<script>
+
+var pastsheetsfunction = function () {
+    google.script.run.withSuccessHandler(ShowPastSheets).LoadPastSheets();
+};
+
+var getemailaddressfunction = function () {
+    google.script.run.withSuccessHandler(ShowYourEmaiAddress).LoadYourEmailAddress();
+};
+
+var getDeveloperKeyFunction = function () {
+    google.script.run.withSuccessHandler(updateDeveloperKey).getDeveloperKey();
+};
+
+
+function ShowYourEmaiAddress(rdata) {
+    $("#getYourEmailAddress").text(rdata);
+};
+
+function ShowPastSheets(rdata) {
+    var gb = false;
+    var gs = false;
+    if (rdata.gradebookName.length > 0 && rdata.gradebookID.length > 0) {
+        gb = true;
+        $("#gradebook").val(rdata.gradebookID);
+        $("#gradebookInfo").text("");
+        $('<a>', {
+            text: rdata.gradebookName,
+            href: rdata.gradebookURL,
+            target: "_blank"
+        }).appendTo('#gradebookInfo');
+    }
+    if (rdata.gradescaleName.length > 0 && rdata.gradescaleID.length > 0) {
+        gs = true;
+        $("#gradescale").val(rdata.gradescaleID);
+        $("#gradescaleInfo").text("");
+        $('<a>', {
+            text: rdata.gradescaleName,
+            href: rdata.gradescaleURL,
+            target: "_blank"
+        }).appendTo('#gradescaleInfo');
+    }
+    if (gb === true || gs === true) {
+        var message = "Your last ";
+        var hashave = "has";
+        if (gb) {
+            message += "gradebook ";
+        }
+        if (gb && gs) {
+            hashave = "have";
+            message += "and ";
+        }
+        if (gs) {
+            message += "gradescale ";
+        }
+
+        message += hashave + " been preselected for you.  Plese use the appropriate button(s) to change the file(s).";
+        showNoticeHide(message);
+    }
+}
+
+var showprogress = false;
+
+
+var progressfunction = function () {
+    if (showprogress === true) {
+        google.script.run.withSuccessHandler(updateProgress).getProgress();
+    }
+};
+
+function updateProgress(rdata) {
+    if (showprogress === true && $("#progress")) {
+        $('#notice').show();
+        $("#progress").text(rdata);
+        setTimeout(progressfunction, 15000);
+    }
+}
+
+function isInt(n) {
+    return Number(n) == n;
+}
+
+function isFloat(n) {
+    return n === Number(n) && n % 1 !== 0;
+}
+
+
+$(document).ready(function () {
+
+    if ($("div.error")[0]) {
+        createError($("div.error"));
+    }
+
+    if ($("div.notice")[0]) {
+        createHighlight($("div.notice"));
+    }
+});
+
+
+function createHighlight(obj) {
+    obj.addClass('ui-state-highlight');
+    obj.html('<p><span class="ui-icon ui-icon-alert" style="float: left; margin-right:.3em;"></span>' + obj.html() + '<span id=\'progress\'></span></p>');
+}
+
+function createError(obj) {
+    obj.addClass('ui-state-error');
+    obj.html('<p><span class="ui-icon ui-icon-alert" style="float: left; margin-right:.3em;"></span>' + obj.html() + '</p>');
+}
+
+
+
+function htmlForTextWithEmbeddedNewlines(text) {
+    var htmls = [];
+    var lines = text.split(/\n/);
+    var tmpDiv = jQuery(document.createElement('div'));
+    for (var i = 0; i < lines.length; i++) {
+        htmls.push(tmpDiv.text(lines[i]).html());
+    }
+    return htmls.join("<br />");
+}
+
+
+$(document).ready(function () {
+    getDeveloperKeyFunction();
+    $('#form').bind('submit', onFormSubmit);
+    $('#templateBut').bind('click', getOTemplatePicker);
+    $('#gradebookBut').bind('click', getOGBPicker);
+    $('#gradescaleBut').bind('click', getOGSPicker);
+    $('#templateDiv').hide();
+
+    $("input[name=delivery]:radio").change(function () {
+        if ($("#emailOnly").prop("checked") === true || $("#noemail").prop("checked") === true) {
+            $('#template').val('');
+            $("#templateInfo").text('');
+            $("#templateDiv").hide();
+        } else {
+            $("#templateDiv").show();
+        }
+    });
+
+
+    $('#advset').click(function () {
+
+        if ($('#adv').is(':visible')) {
+            $('#advset').text('Show advanced settings...');
+            $('#adv').hide();
+        } else {
+            $('#advset').text('Hide advanced settings...');
+            $('#adv').show();
+        }
+    });
+
+    $('#helpDrop').click(function () {
+        helpdialog.dialog("open");
+    });
+
+
+    $('#avbut').click(function () {
+        avdiaglog.dialog("open");
+    });
+
+    $('#helpFiles').click(function () {
+        helpfilesdiaglog.dialog("open");
+    });
+
+    $('#helpDelivery').click(function () {
+        helpdeliverydiaglog.dialog("open");
+    });
+
+    $('#emailbody').bind('input', function () {
+        var mes = $('#emailbody').val();
+        $('#emailbodymes').html(htmlForTextWithEmbeddedNewlines(mes));
+    });
+
+
+    $(".messageoptions").change(function () {
+        reBuildMes();
+    });
+    $('#downloadgradescaledefault').click(function () {
+        $("#gradescaleInfo").text("...");
+        $("#gradescaleBut").prop("disabled", true);
+        google.script.run.withSuccessHandler(DefaultGradeScale).withFailureHandler(DefaultGradeScaleFail).LoadDefaultGradeScale();
+    });
+
+    reBuildMes();
+    getemailaddressfunction();
+    pastsheetsfunction();
+    
+
+
+
+    if (window.File && window.FileReader && window.FileList && window.Blob) {
+        var dropregion = $("#filesRegion");
+        dropregion.on('dragenter', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            $(this).css('background', 'repeating-linear-gradient(-45deg, transparent 0 20px, #D3D3D3 20px 40px)');
+            $(this).css('border', '2px solid #000');
+        });
+        dropregion.on('dragover', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+        });
+        dropregion.on('drop', function (e) {
+            $(this).css('background', '');
+            $(this).css('border', '');
+            e.preventDefault();
+            var files = e.originalEvent.dataTransfer.files;
+
+            handleFileUpload(files);
+        });
+
+        $(document).on('dragenter', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+        });
+        $(document).on('dragover', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            dropregion.css('background', 'repeating-linear-gradient(-45deg, transparent 0 20px, #F5F5F5 20px 40px)');
+            dropregion.css('border', '2px dotted #000');
+        });
+        $(document).on('drop', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            dropregion.css('background', '');
+            dropregion.css('border', '');
+        });
+
+        $(document).on('dragleave', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+        });
+
+    }
+    
+});
+var fileobject = {};
+fileobject.files = [];
+fileobject.filelength = 0;
+
+function handleFileUpload(files) {
+    fileobject.files = [];
+    fileobject.filelength = files.length;
+    showNotice("Processing your gradebook file. Please be patient...");
+    for (var i = 0; i < files.length; i++) {
+        var reader = new FileReader();
+        reader.onload = (function (theFile) {
+            return function (e) {
+                if (theFile.name.substr(theFile.name.length - 4, 4).toLowerCase() == '.txt' || theFile.name.substr(theFile.name.length - 4, 4).toLowerCase() == '.ods' || theFile.name.substr(theFile.name.length - 4, 4).toLowerCase() == '.xls' || theFile.name.substr(theFile.name.length - 5, 5).toLowerCase() == '.xlsx' || theFile.name.substr(theFile.name.length - 4, 4).toLowerCase() == '.csv' || theFile.type.toLowerCase().indexOf("excel") > -1 || theFile.type.toLowerCase().indexOf("csv") > -1 || theFile.type.toLowerCase().indexOf("spreadsheet") > -1) {
+
+                    $("#gradebookBut").prop("disabled", true);
+                    var data = {};
+                    data.name = theFile.name;
+                    data.type = theFile.type || "application/octet-stream";
+                    if (theFile.name.substr(theFile.name.length - 4, 4).toLowerCase() == '.xls' && data.type == "application/octet-stream") {
+                        data.type = "application/vnd.ms-excel";
+                    }
+                    if (theFile.name.substr(theFile.name.length - 5, 5).toLowerCase() == '.xlsx' && data.type == "application/octet-stream") {
+                        data.type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                    }
+                    if (theFile.name.substr(theFile.name.length - 4, 4).toLowerCase() == '.csv' && data.type == "application/octet-stream") {
+                        data.type = "text/csv";
+                    }
+                    if (theFile.name.substr(theFile.name.length - 4, 4).toLowerCase() == '.ods' && data.type == "application/octet-stream") {
+                        data.type = "application/vnd.oasis.opendocument.spreadsheet";
+                    }
+                    if (theFile.name.substr(theFile.name.length - 4, 4).toLowerCase() == '.txt' && data.type !== "text/csv") {
+                        data.type = "text/tab-separated-values";
+                    }
+                    data.blob = e.target.result;
+                    fileobject.files.push(data);
+
+                } else {
+                    var message = "The uploaded file is not a recognized spreadsheet format.";
+                    showError(message);
+                }
+                if (fileobject.files.length === fileobject.filelength && fileobject.filelength > 0) {
+                    sendFileToServer(fileobject);
+                }
+            };
+        })(files[i]);
+        reader.readAsDataURL(files[i]);
+    }
+}
+
+function sendFileToServer(formData) {
+    google.script.run.withSuccessHandler(processNewFileResponse).withFailureHandler(processError).SendGradebook(formData);
+}
+
+function processError(data) {
+    $("#gradebookBut").prop("disabled", false);
+    showError(data);
+}
+
+function processNewFileResponse(data) {
+
+    $('#notice').hide();
+    $("#gradebookBut").prop("disabled", false);
+
+    if (data.pointsCol.length > 0 && data.nameCol > -1) {
+        dialog.dialog("open");
+
+        $('#pointscollist')
+            .find('option')
+            .remove()
+            .end();
+        $.each(data.pointsCol, function (index, value) {
+
+            $('#pointscollist')
+                .append($("<option></option>")
+                    .attr("value", value.id)
+                    .text(value.name));
+        });
+        $("#gradebookId").val(data.fileID);
+        $("#gradebookName").val(data.fileName);
+        $("#studentNameCol").val(data.nameCol);
+        $("#studentEMailCol").val(data.emailCol);
+        $("#emailappend").val(data.domainDefault);
+        if (data.needsDomain) {
+            $('#emailpointsappenddiv').show();
+        } else {
+            $('#emailpointsappenddiv').hide();
+        }
+    } else {
+        var message = "The uploaded file could not be interpreted.";
+        showError(message);
+    }
+}
+
+function DefaultGradeScale(rdata) {
+    $("#gradescaleBut").prop("disabled", false);
+    if (rdata.gradescaleName.length > 0 && rdata.gradescaleID.length > 0) {
+        $("#gradescale").val(rdata.gradescaleID);
+        $("#gradescaleInfo").text("");
+        $('<a>', {
+            text: rdata.gradescaleName,
+            href: rdata.gradescaleURL,
+            target: "_blank"
+        }).appendTo('#gradescaleInfo');
+        var message = "A gradescale has been created in your Google Drive.  ";
+        showNoticeHide(message);
+        if (rdata.gradescaleURL.length > 0) {
+            $('<a>', {
+                text: 'Click here to open the file.',
+                href: rdata.gradescaleURL,
+                target: "_blank"
+            }).appendTo('#progress');
+        }
+    }
+}
+
+function DefaultGradeScaleFail(rdata) {
+    $("#gradescaleBut").prop("disabled", false);
+    showError(rdata);
+}
+
+function reBuildMes() {
+    var message = 'As of now, you have a(n) [Grade] in the class. This assignment is worth [POINTS] points.';
+
+    if ($("#gradeup").prop("checked") === true) {
+        if ($("#percentage").prop("checked") === true) {
+            var percentageup = ' ([X %]%)';
+        } else {
+            var percentageup = '';
+        }
+        var message = message + '  If you get more than [X]' + percentageup + ' on this assignment, your class grade will increase to a(n) [Higher Grade].';
+    }
+
+    if ($("#gradedown").prop("checked") === true) {
+        if ($("#percentage").prop("checked") === true) {
+            var percentagedown = ' ([Y %]%)';
+        } else {
+            var percentagedown = '';
+        }
+        var message = message + '  If you get less than [Y]' + percentagedown + ' on this assignment, your grade will drop at least one grade.';
+    }
+
+    if ($("#incomplete").prop("checked") === true) {
+        var message = message + '  Not doing the assignment will result in a(n) [Lower Grade].';
+    }
+
+    $("#nudgemes").text(message);
+}
+
+
+
+
+// IMPORTANT: Replace the value for DEVELOPER_KEY with the API key obtained
+// from the Google Developers Console.
+var DEVELOPER_KEY = '';
+var DIALOG_DIMENSIONS = {
+    width: 600,
+    height: 425
+};
+var pickerApiLoaded = false;
+
+/**
+ * Loads the Google Picker API.
+ */
+function onApiLoad() {
+    gapi.load('picker', {
+        'callback': function () {
+            pickerApiLoaded = true;
+        }
+    });
+}
+
+function updateDeveloperKey(data) {
+    DEVELOPER_KEY = data;
+}
+
+
+function getOTemplatePicker() {
+    google.script.run.withSuccessHandler(createTPicker).withFailureHandler(showError).getOAuthToken();
+}
+
+function createTPicker(token) {
+    if (pickerApiLoaded && token) {
+        var picker = new google.picker.PickerBuilder()
+            .addView(google.picker.ViewId.DOCUMENTS)
+            .enableFeature(google.picker.Feature.NAV_HIDDEN)
+            .hideTitleBar()
+            .setOAuthToken(token)
+            .setDeveloperKey(DEVELOPER_KEY)
+            .setCallback(pickerTCallback)
+            .setOrigin(google.script.host.origin)
+            .setSize(DIALOG_DIMENSIONS.width - 2,
+                DIALOG_DIMENSIONS.height - 2)
+            .build();
+        picker.setVisible(true);
+    }
+}
+
+function pickerTCallback(data) {
+    var action = data[google.picker.Response.ACTION];
+    if (action == google.picker.Action.PICKED) {
+        var doc = data[google.picker.Response.DOCUMENTS][0];
+        var id = doc[google.picker.Document.ID];
+        var title = doc[google.picker.Document.NAME];
+        var url = doc[google.picker.Document.URL];
+        $("#template").val(id);
+        $('#templateInfo').text("");
+        $('<a>', {
+            text: title,
+            href: url,
+            target: "_blank"
+        }).appendTo('#templateInfo');
+    }
+}
+
+
+function getOGBPicker() {
+    google.script.run.withSuccessHandler(createGBPicker).withFailureHandler(showError).getOAuthToken();
+}
+
+function createGBPicker(token) {
+    if (pickerApiLoaded && token) {
+        var picker = new google.picker.PickerBuilder()
+            .addView(google.picker.ViewId.SPREADSHEETS)
+            .enableFeature(google.picker.Feature.NAV_HIDDEN)
+            .hideTitleBar()
+            .setOAuthToken(token)
+            .setDeveloperKey(DEVELOPER_KEY)
+            .setCallback(pickerGBCallback)
+            .setOrigin(google.script.host.origin)
+            .setSize(DIALOG_DIMENSIONS.width - 2,
+                DIALOG_DIMENSIONS.height - 2)
+            .build();
+        picker.setVisible(true);
+    }
+}
+
+function pickerGBCallback(data) {
+    var action = data[google.picker.Response.ACTION];
+    if (action == google.picker.Action.PICKED) {
+        var doc = data[google.picker.Response.DOCUMENTS][0];
+        var id = doc[google.picker.Document.ID];
+        var title = doc[google.picker.Document.NAME];
+        var url = doc[google.picker.Document.URL];
+        $("#SavedstudentNameCol").val("");
+        $("#SavedstudentEMailCol").val("");
+        $("#Savedemailappend").val("");
+        $("#Savedpointscollist").val("");
+        $("#gradebook").val(id);
+        $('#gradebookInfo').text("");
+        $('<a>', {
+            text: title,
+            href: url,
+            target: "_blank"
+        }).appendTo('#gradebookInfo');
+    }
+}
+
+function getOGSPicker() {
+    google.script.run.withSuccessHandler(createGSPicker).withFailureHandler(showError).getOAuthToken();
+}
+
+function createGSPicker(token) {
+    if (pickerApiLoaded && token) {
+        var picker = new google.picker.PickerBuilder()
+            .addView(google.picker.ViewId.SPREADSHEETS)
+            .enableFeature(google.picker.Feature.NAV_HIDDEN)
+            .hideTitleBar()
+            .setOAuthToken(token)
+            .setDeveloperKey(DEVELOPER_KEY)
+            .setCallback(pickerGSCallback)
+            .setOrigin(google.script.host.origin)
+            .setSize(DIALOG_DIMENSIONS.width - 2,
+                DIALOG_DIMENSIONS.height - 2)
+            .build();
+        picker.setVisible(true);
+    }
+}
+
+function pickerGSCallback(data) {
+    var action = data[google.picker.Response.ACTION];
+    if (action == google.picker.Action.PICKED) {
+        var doc = data[google.picker.Response.DOCUMENTS][0];
+        var id = doc[google.picker.Document.ID];
+        var title = doc[google.picker.Document.NAME];
+        var url = doc[google.picker.Document.URL];
+        $("#gradescale").val(id);
+        $('#gradescaleInfo').text("");
+        $('<a>', {
+            text: title,
+            href: url,
+            target: "_blank"
+        }).appendTo('#gradescaleInfo');
+    }
+}
+
+
+function showError(message) {
+    $('#notice').hide();
+    $("html, body").animate({
+        scrollTop: 0
+    }, "fast");
+    var obj = $('#error');
+    obj.text(message);
+    obj.addClass('ui-state-error');
+    obj.html('<p><span class="ui-icon ui-icon-alert" style="float: left; margin-right:.3em;"></span>' + obj.html() + '</p>');
+    obj.show(0).delay(30000).hide(0);
+}
+
+function showNotice(message) {
+    $('#error').hide();
+    $("html, body").animate({
+        scrollTop: 0
+    }, "fast");
+    var obj = $('#notice');
+    obj.text(message);
+    obj.addClass('ui-state-highlight');
+    obj.html('<p><span class="ui-icon ui-icon-alert" style="float: left; margin-right:.3em;"></span>' + obj.html() + '<span id=\'progress\'></span></p>');
+    obj.show();
+}
+
+function showNoticeHide(message) {
+    $('#error').hide();
+    $("html, body").animate({
+        scrollTop: 0
+    }, "fast");
+    var obj = $('#notice');
+    obj.text(message);
+    obj.addClass('ui-state-highlight');
+    obj.html('<p><span class="ui-icon ui-icon-alert" style="float: left; margin-right:.3em;"></span>' + obj.html() + '<span id=\'progress\'></span></p>');
+    obj.show(0).delay(30000).hide(0);
+}
+
+function onFormSubmit(event) {
+    var data = $('#form').serializeArray().reduce(function (obj, item) {
+        obj[item.name] = item.value;
+        return obj;
+    }, {});
+    if (data['subjectline'].length < 1) {
+        showError("You must specify a subject.");
+        return false;
+    }
+    if (data['gradebook'].length < 1) {
+        showError("You must specify the gradebook.");
+        return false;
+    }
+    if (data['gradescale'].length < 1) {
+        showError("You must specify the gradescale.");
+        return false;
+    }
+    if (data['delivery'] != 'email' && data['delivery'] != 'noemail' && data['template'].length < 1) {
+        showError("You must specify the homework template.");
+        return false;
+    }
+    if (data['delivery'] != 'noemail' && data['SavedstudentEMailCol'] == -1) {
+        showError("Your gradebook does not contain e-mail addresses.  You can only save the nudge message to a column.");
+        return false;
+    }
+    if (isInt(data['points']) === false || Number(data['points']) < 1) {
+        showError("You must specify the assignment points.");
+        return false;
+    }
+    if (isInt(data['tpoints']) === false || Number(data['tpoints']) < 1) {
+        showError("You must specify the total points in the class.");
+        return false;
+    }
+    if (data['Savedemailappend'].length > 0) {
+        data['Savedemailappend'] = data['Savedemailappend'].replace("@", "");
+    }
+    $("html, body").animate({
+        scrollTop: 0
+    }, "fast");
+    $('#submitButton').hide();
+    showNotice("Nudging your students, please be patient...");
+    showprogress = true;
+    setTimeout(progressfunction, 15000);
+    google.script.run.withSuccessHandler(onSuccess).withFailureHandler(onFailure).CheckData(data);
+    return false;
+}
+
+function onSuccess(sucData) {
+    showprogress = false;
+    $('#submitButton').show();
+    $('#notice').hide();
+    if (sucData === true) {
+        $("html, body").animate({
+            scrollTop: 0
+        }, "fast");
+        showNotice("Success! You've nudged your students!");
+        $('#notice').delay(30000).hide(0);
+        if ($("#Savedpointscollist").val().length > 0 && $("#lStart").val().length === 0 && $("#lEnd").val().length === 0) {
+            $("#SavedstudentNameCol").val("");
+            $("#SavedstudentEMailCol").val("");
+            $("#Savedemailappend").val("");
+            $("#Savedpointscollist").val("");
+            $("#gradebook").val("");
+            $("#gradebookInfo").text("");
+        }
+    } else {
+        showError(sucData);
+    }
+    return false;
+}
+
+function onFailure(error) {
+    showprogress = false;
+    $('#notice').hide();
+    $('#submitButton').show();
+    var errormessage = error.message;
+    showError(errormessage);
+    return false;
+}
+
+
+function populateInputs() {
+    var data = $('#gradebookForm').serializeArray().reduce(function (obj, item) {
+        obj[item.name] = item.value;
+        return obj;
+    }, {});
+    $("#SavedstudentNameCol").val(data.studentNameCol);
+    $("#SavedstudentEMailCol").val(data.studentEMailCol);
+
+    if ($("#emailpointsappenddiv").is(":visible")) {
+        $("#Savedemailappend").val(data.emailappend);
+    } else {
+        $("#Savedemailappend").val("");
+    }
+
+    $("#Savedpointscollist").val(data.pointscollist);
+    $("#gradebook").val(data.gradebookId);
+    $("#gradebookInfo").text(data.gradebookName);
+
+}
+
+dialog = $("#uploadedFileInformation").dialog({
+    autoOpen: false,
+    resizable: false,
+    height: "auto",
+    width: 600,
+    modal: true,
+    buttons: {
+        "Use Gradebook": function () {
+            populateInputs();
+            $(this).dialog("close");
+        },
+        Cancel: function () {
+            $(this).dialog("close");
+        }
+    }
+});
+
+$("#gradebookForm").on("submit", function (event) {
+    populateInputs();
+    event.preventDefault();
+});
+
+helpdialog = $("#supportedFileUploads").dialog({
+    autoOpen: false,
+    resizable: false,
+    height: "auto",
+    width: 600,
+    modal: true,
+    buttons: {
+        Close: function () {
+            $(this).dialog("close");
+        }
+    }
+});
+
+avdiaglog = $("#assignmentPointsDialog").dialog({
+    autoOpen: false,
+    resizable: false,
+    height: "auto",
+    width: 600,
+    modal: true,
+    buttons: {
+        Close: function () {
+            $(this).dialog("close");
+        }
+    }
+});
+
+helpfilesdiaglog = $("#helpFilesDialog").dialog({
+    autoOpen: false,
+    resizable: false,
+    height: "auto",
+    width: 600,
+    modal: true,
+    buttons: {
+        Close: function () {
+            $(this).dialog("close");
+        }
+    }
+});
+
+helpdeliverydiaglog = $("#helpDeliveryDialog").dialog({
+    autoOpen: false,
+    resizable: false,
+    height: "auto",
+    width: 600,
+    modal: true,
+    buttons: {
+        Close: function () {
+            $(this).dialog("close");
+        }
+    }
+});
+
+$(function () {
+    $(document).tooltip();
+});
+
+</script>
