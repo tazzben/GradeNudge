@@ -6,17 +6,16 @@ function doGet(e) {
 }
 
 function getOAuthToken() {
+    var returnData = {};
+    var scriptProperties = PropertiesService.getScriptProperties();
+    returnData.dev_key = scriptProperties.getProperty('DEVELOPER_KEY');
     DriveApp.getRootFolder();
-    return ScriptApp.getOAuthToken();
+    returnData.token = ScriptApp.getOAuthToken();
+    return returnData;
 }
 
 function CheckData(data) {
     return interfaceClass.submitWindow(data);
-}
-
-function getDeveloperKey(){
-    var scriptProperties = PropertiesService.getScriptProperties();
-    return scriptProperties.getProperty('DEVELOPER_KEY');
 }
 
 function SendGradebook(dataarray) {
@@ -104,6 +103,7 @@ function SendGradebook(dataarray) {
 var commonSettings = {};
 commonSettings.fullName = ['name', 'student', 'student name', 'full name', 'full names', 'names', 'students', 'student names'];
 commonSettings.firstName = ['first', 'first name', 'first names'];
+commonSettings.lastName = ['last', 'last name', 'last names'];
 commonSettings.email = ['email', 'e-mail', 'e-mail address', 'email address', 'e-mail addresses', 'email addresses'];
 commonSettings.points = ['points', 'point', 'current points', 'final points'];
 commonSettings.replace = ['replace', 'replacement', 'substitute'];
@@ -192,6 +192,7 @@ processUploadedFile.findEmailDictionary = function (file) {
         var searchUserCol = -1;
         var countNonCols = 0;
         var searchFirstCol = -1;
+        var searchLastCol = -1;
         if (data.length > 0) {
             var firstRow = data[0];
             for (var i = 0; i < firstRow.length; i++) {
@@ -199,6 +200,8 @@ processUploadedFile.findEmailDictionary = function (file) {
                     searchNameCol = i;
                 } else if ((commonSettings.firstName.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1) && searchFirstCol === -1) {
                     searchFirstCol = i;
+                } else if ((commonSettings.lastName.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1) && searchLastCol === -1) {
+                    searchLastCol = i;
                 } else if ((commonSettings.email.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1) && searchEmailCol === -1) {
                     searchEmailCol = i;
                 } else if ((commonSettings.username.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1 || firstRow[i].toString().toLowerCase().trim().substr(firstRow[i].toString().trim().length - 8) == 'login id') && searchUserCol === -1) {
@@ -231,6 +234,14 @@ processUploadedFile.findEmailDictionary = function (file) {
                         processUploadedFile.emailDictionary.names.push(data[i][searchNameCol].toString().trim());
                     }
                 }
+            } else if (searchEmailCol > -1 && searchFirstCol > -1 && searchLastCol > -1){
+                for (var i = 1; i < data.length; i++) {
+                    var builtName = data[i][searchFirstCol].toString().trim() + " " + data[i][searchLastCol].toString().trim();
+                    if (builtName.length > 0 && data[i][searchEmailCol].toString().trim().length > 0) {
+                        processUploadedFile.emailDictionary.emails.push(data[i][searchEmailCol].toString().trim());
+                        processUploadedFile.emailDictionary.names.push(builtName);
+                    }
+                }
             }
         }
     }
@@ -242,6 +253,7 @@ processUploadedFile.walkSheetHeader = function (file) {
     var tempusernameCol = -1;
     var sheets = spreadsheet.getSheets();
     var tempfirstnameCol = -1;
+    var templastnameCol = -1;
     if (sheets.length > 0) {
         var firstSheet = sheets[0];
         var data = firstSheet.getDataRange()
@@ -251,8 +263,10 @@ processUploadedFile.walkSheetHeader = function (file) {
             for (var i = 0; i < firstRow.length; i++) {
                 if ((commonSettings.fullName.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1) && processUploadedFile.nameCol === -1) {
                     processUploadedFile.nameCol = i;
-                } else if ((commonSettings.firstName.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1) && tempusernameCol === -1) {
+                } else if ((commonSettings.firstName.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1) && tempfirstnameCol === -1) {
                     tempfirstnameCol = i;
+                } else if ((commonSettings.lastName.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1) && templastnameCol === -1) {
+                    templastnameCol = i;
                 } else if ((commonSettings.email.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1) && processUploadedFile.emailCol === -1) {
                     processUploadedFile.emailCol = i;
                 } else if (commonSettings.points.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1 || firstRow[i].toString().toLowerCase().trim().substr(0, 5) == 'total' || firstRow[i].toString().toLowerCase().trim().substr(0, 12) == 'course total' || firstRow[i].toString().toLowerCase().trim().substr(0, 24) == 'blackboard points earned') {
@@ -272,12 +286,16 @@ processUploadedFile.walkSheetHeader = function (file) {
         if (processUploadedFile.emailCol === -1) {
             processUploadedFile.emailCol = tempusernameCol;
         }
-        if (processUploadedFile.emailCol === -1 && processUploadedFile.emailDictionary.names.length > 0 && processUploadedFile.nameCol > -1) {
+        if (processUploadedFile.emailCol === -1 && processUploadedFile.emailDictionary.names.length > 0 && (processUploadedFile.nameCol > -1 || (tempfirstnameCol > -1 && templastnameCol > -1))) {
             var lastCol = firstSheet.getLastColumn();
             processUploadedFile.emailCol = lastCol;
             firstSheet.getRange(1, (lastCol + 1)).setValue("E-Mail");
             for (var i = 1; i < data.length; i++) {
-                var namedata = data[i][processUploadedFile.nameCol].toString().trim();
+                if (processUploadedFile.nameCol > -1){
+                    var namedata = data[i][processUploadedFile.nameCol].toString().trim();
+                } else {
+                    var namedata = data[i][tempfirstnameCol].toString().trim() + " " + data[i][templastnameCol].toString().trim();
+                }
                 var foundid = processUploadedFile.emailDictionary.names.indexOf(namedata);
                 if (foundid > -1 && namedata.length > 0) {
                     var foundemail = processUploadedFile.emailDictionary.emails[foundid].toString().trim();
@@ -396,16 +414,13 @@ function LoadPastSheets() {
             }
         }
     }
+    returnData.YourEmailAddress = Session.getActiveUser().getEmail().toString().trim();
     return returnData;
 }
 
 
 function isInt(n) {
     return parseFloat(n) == parseInt(n, 10) && !isNaN(n);
-}
-
-function LoadYourEmailAddress() {
-    return Session.getActiveUser().getEmail().toString().trim();
 }
 
 function isFloat(n) {

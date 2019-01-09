@@ -7,14 +7,6 @@ var pastsheetsfunction = function () {
     google.script.run.withSuccessHandler(ShowPastSheets).LoadPastSheets();
 };
 
-var getemailaddressfunction = function () {
-    google.script.run.withSuccessHandler(ShowYourEmaiAddress).LoadYourEmailAddress();
-};
-
-var getDeveloperKeyFunction = function () {
-    google.script.run.withSuccessHandler(updateDeveloperKey).getDeveloperKey();
-};
-
 
 function ShowYourEmaiAddress(rdata) {
     $("#getYourEmailAddress").text(rdata);
@@ -23,6 +15,9 @@ function ShowYourEmaiAddress(rdata) {
 function ShowPastSheets(rdata) {
     var gb = false;
     var gs = false;
+    if (rdata.YourEmailAddress){
+        ShowYourEmaiAddress(rdata.YourEmailAddress);
+    }
     if (rdata.gradebookName.length > 0 && rdata.gradebookID.length > 0) {
         gb = true;
         $("#gradebook").val(rdata.gradebookID);
@@ -124,7 +119,7 @@ function htmlForTextWithEmbeddedNewlines(text) {
 
 
 $(document).ready(function () {
-    getDeveloperKeyFunction();
+    
     $('#form').bind('submit', onFormSubmit);
     $('#templateBut').bind('click', getOTemplatePicker);
     $('#gradebookBut').bind('click', getOGBPicker);
@@ -186,7 +181,6 @@ $(document).ready(function () {
     });
 
     reBuildMes();
-    getemailaddressfunction();
     pastsheetsfunction();
     
 
@@ -389,9 +383,6 @@ function reBuildMes() {
 
 
 
-// IMPORTANT: Replace the value for DEVELOPER_KEY with the API key obtained
-// from the Google Developers Console.
-var DEVELOPER_KEY = '';
 var DIALOG_DIMENSIONS = {
     width: 600,
     height: 425
@@ -409,23 +400,19 @@ function onApiLoad() {
     });
 }
 
-function updateDeveloperKey(data) {
-    DEVELOPER_KEY = data;
-}
-
 
 function getOTemplatePicker() {
     google.script.run.withSuccessHandler(createTPicker).withFailureHandler(showError).getOAuthToken();
 }
 
-function createTPicker(token) {
-    if (pickerApiLoaded && token) {
+function createTPicker(rdata) {
+    if (pickerApiLoaded && rdata.token && rdata.dev_key) {
         var picker = new google.picker.PickerBuilder()
             .addView(google.picker.ViewId.DOCUMENTS)
             .enableFeature(google.picker.Feature.NAV_HIDDEN)
             .hideTitleBar()
-            .setOAuthToken(token)
-            .setDeveloperKey(DEVELOPER_KEY)
+            .setOAuthToken(rdata.token)
+            .setDeveloperKey(rdata.dev_key)
             .setCallback(pickerTCallback)
             .setOrigin(google.script.host.origin)
             .setSize(DIALOG_DIMENSIONS.width - 2,
@@ -457,14 +444,14 @@ function getOGBPicker() {
     google.script.run.withSuccessHandler(createGBPicker).withFailureHandler(showError).getOAuthToken();
 }
 
-function createGBPicker(token) {
-    if (pickerApiLoaded && token) {
+function createGBPicker(rdata) {
+    if (pickerApiLoaded && rdata.token && rdata.dev_key) {
         var picker = new google.picker.PickerBuilder()
             .addView(google.picker.ViewId.SPREADSHEETS)
             .enableFeature(google.picker.Feature.NAV_HIDDEN)
             .hideTitleBar()
-            .setOAuthToken(token)
-            .setDeveloperKey(DEVELOPER_KEY)
+            .setOAuthToken(rdata.token)
+            .setDeveloperKey(rdata.dev_key)
             .setCallback(pickerGBCallback)
             .setOrigin(google.script.host.origin)
             .setSize(DIALOG_DIMENSIONS.width - 2,
@@ -499,14 +486,14 @@ function getOGSPicker() {
     google.script.run.withSuccessHandler(createGSPicker).withFailureHandler(showError).getOAuthToken();
 }
 
-function createGSPicker(token) {
-    if (pickerApiLoaded && token) {
+function createGSPicker(rdata) {
+    if (pickerApiLoaded && rdata.token && rdata.dev_key) {
         var picker = new google.picker.PickerBuilder()
             .addView(google.picker.ViewId.SPREADSHEETS)
             .enableFeature(google.picker.Feature.NAV_HIDDEN)
             .hideTitleBar()
-            .setOAuthToken(token)
-            .setDeveloperKey(DEVELOPER_KEY)
+            .setOAuthToken(rdata.token)
+            .setDeveloperKey(rdata.dev_key)
             .setCallback(pickerGSCallback)
             .setOrigin(google.script.host.origin)
             .setSize(DIALOG_DIMENSIONS.width - 2,
