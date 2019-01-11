@@ -110,11 +110,12 @@ commonSettings.replace = ['replace', 'replacement', 'substitute'];
 commonSettings.fullPoints = ['full points', 'possible', 'possible points'];
 commonSettings.message = ['message', 'messages'];
 commonSettings.username = ['username', 'usernames', 'login', 'logins'];
+commonSettings.teststudents = ['test student', 'demo student', 'demo', 'test'];
 
 commonSettings.determineDecSeperator = function () {
     var decSep = ".";
     try {
-        var sep = parseFloat(3/2).toLocaleString().substring(1, 2);
+        var sep = parseFloat(3 / 2).toLocaleString().substring(1, 2);
         if (sep === ',') {
             decSep = sep;
         }
@@ -234,7 +235,7 @@ processUploadedFile.findEmailDictionary = function (file) {
                         processUploadedFile.emailDictionary.names.push(data[i][searchNameCol].toString().trim());
                     }
                 }
-            } else if (searchEmailCol > -1 && searchFirstCol > -1 && searchLastCol > -1){
+            } else if (searchEmailCol > -1 && searchFirstCol > -1 && searchLastCol > -1) {
                 for (var i = 1; i < data.length; i++) {
                     var builtName = data[i][searchFirstCol].toString().trim() + " " + data[i][searchLastCol].toString().trim();
                     if (builtName.length > 0 && data[i][searchEmailCol].toString().trim().length > 0) {
@@ -291,7 +292,7 @@ processUploadedFile.walkSheetHeader = function (file) {
             processUploadedFile.emailCol = lastCol;
             firstSheet.getRange(1, (lastCol + 1)).setValue("E-Mail");
             for (var i = 1; i < data.length; i++) {
-                if (processUploadedFile.nameCol > -1){
+                if (processUploadedFile.nameCol > -1) {
                     var namedata = data[i][processUploadedFile.nameCol].toString().trim();
                 } else {
                     var namedata = data[i][tempfirstnameCol].toString().trim() + " " + data[i][templastnameCol].toString().trim();
@@ -1045,53 +1046,55 @@ walkSheet.getHeader = function (file) {
         if (walkSheet.nameCol > -1 && (walkSheet.emailCol > -1 || interfaceClass.noemail === true) && walkSheet.pointsCol > -1) {
             for (var i = 1; i < data.length; i++) {
                 var nameNoNumber = data[i][walkSheet.nameCol].toString().replace(/[0-9#]/g, '').trim();
-                if (interfaceClass.noemail === true) {
-                    if (nameNoNumber.length > 0) {
-                        walkSheet.rowpos.push(i);
-                        walkSheet.names.push(nameNoNumber);
-                        walkSheet.emails.push("");
-                        if (isNaN(parseFloat(data[i][walkSheet.pointsCol]))) {
-                            walkSheet.points.push(0.0);
-                        } else {
-                            walkSheet.points.push(parseFloat(data[i][walkSheet.pointsCol]));
-                        }
-                        if (walkSheet.replacementCol > -1) {
-                            if (isNaN(parseFloat(data[i][walkSheet.replacementCol]))) {
-                                walkSheet.replacement.push(0.0);
+                if (commonSettings.teststudents.indexOf(nameNoNumber.toLowerCase()) === -1 || (data.length - i) > 1) {
+                    if (interfaceClass.noemail === true) {
+                        if (nameNoNumber.length > 0) {
+                            walkSheet.rowpos.push(i);
+                            walkSheet.names.push(nameNoNumber);
+                            walkSheet.emails.push("");
+                            if (isNaN(parseFloat(data[i][walkSheet.pointsCol]))) {
+                                walkSheet.points.push(0.0);
                             } else {
-                                walkSheet.replacement.push(parseFloat(data[i][walkSheet.replacementCol]));
+                                walkSheet.points.push(parseFloat(data[i][walkSheet.pointsCol]));
+                            }
+                            if (walkSheet.replacementCol > -1) {
+                                if (isNaN(parseFloat(data[i][walkSheet.replacementCol]))) {
+                                    walkSheet.replacement.push(0.0);
+                                } else {
+                                    walkSheet.replacement.push(parseFloat(data[i][walkSheet.replacementCol]));
+                                }
+                            }
+                            if (walkSheet.possiblePointsCol > -1) {
+                                if (isNaN(parseFloat(data[i][walkSheet.possiblePointsCol]))) {
+                                    walkSheet.possiblePoints.push(false);
+                                } else {
+                                    walkSheet.possiblePoints.push(parseFloat(data[i][walkSheet.possiblePointsCol]));
+                                }
                             }
                         }
-                        if (walkSheet.possiblePointsCol > -1) {
-                            if (isNaN(parseFloat(data[i][walkSheet.possiblePointsCol]))) {
-                                walkSheet.possiblePoints.push(false);
+                    } else {
+                        if (nameNoNumber.length > 0 && data[i][walkSheet.emailCol].toString().trim().length > 0) {
+                            walkSheet.rowpos.push(i);
+                            walkSheet.names.push(nameNoNumber);
+                            walkSheet.emails.push(data[i][walkSheet.emailCol].toString().trim());
+                            if (isNaN(parseFloat(data[i][walkSheet.pointsCol]))) {
+                                walkSheet.points.push(0.0);
                             } else {
-                                walkSheet.possiblePoints.push(parseFloat(data[i][walkSheet.possiblePointsCol]));
+                                walkSheet.points.push(parseFloat(data[i][walkSheet.pointsCol]));
                             }
-                        }
-                    }
-                } else {
-                    if (nameNoNumber.length > 0 && data[i][walkSheet.emailCol].toString().trim().length > 0) {
-                        walkSheet.rowpos.push(i);
-                        walkSheet.names.push(nameNoNumber);
-                        walkSheet.emails.push(data[i][walkSheet.emailCol].toString().trim());
-                        if (isNaN(parseFloat(data[i][walkSheet.pointsCol]))) {
-                            walkSheet.points.push(0.0);
-                        } else {
-                            walkSheet.points.push(parseFloat(data[i][walkSheet.pointsCol]));
-                        }
-                        if (walkSheet.replacementCol > -1) {
-                            if (isNaN(parseFloat(data[i][walkSheet.replacementCol]))) {
-                                walkSheet.replacement.push(0.0);
-                            } else {
-                                walkSheet.replacement.push(parseFloat(data[i][walkSheet.replacementCol]));
+                            if (walkSheet.replacementCol > -1) {
+                                if (isNaN(parseFloat(data[i][walkSheet.replacementCol]))) {
+                                    walkSheet.replacement.push(0.0);
+                                } else {
+                                    walkSheet.replacement.push(parseFloat(data[i][walkSheet.replacementCol]));
+                                }
                             }
-                        }
-                        if (walkSheet.possiblePointsCol > -1) {
-                            if (isNaN(parseFloat(data[i][walkSheet.possiblePointsCol]))) {
-                                walkSheet.possiblePoints.push(false);
-                            } else {
-                                walkSheet.possiblePoints.push(parseFloat(data[i][walkSheet.possiblePointsCol]));
+                            if (walkSheet.possiblePointsCol > -1) {
+                                if (isNaN(parseFloat(data[i][walkSheet.possiblePointsCol]))) {
+                                    walkSheet.possiblePoints.push(false);
+                                } else {
+                                    walkSheet.possiblePoints.push(parseFloat(data[i][walkSheet.possiblePointsCol]));
+                                }
                             }
                         }
                     }
