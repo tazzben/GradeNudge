@@ -13,6 +13,9 @@ function getOAuthToken() {
     returnData.token = ScriptApp.getOAuthToken();
     return returnData;
 }
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
 function CheckData(data) {
     return interfaceClass.submitWindow(data);
@@ -523,8 +526,13 @@ interfaceClass.submitWindow = function (data) {
 
     var start = data.lStart;
     var end = data.lEnd;
-
-
+    
+    if (data.assignmentName){
+        if (data.assignmentName.trim().length > 0){
+            makeGrades.assignmentName = data.assignmentName.trim();
+        }
+    }
+    
     var rangecheck = false;
     if (isInt(start) && isInt(end)) {
         var start = parseInt(start, 10);
@@ -613,6 +621,7 @@ walkSheet.points = [];
 
 
 makeGrades = {};
+makeGrades.assignmentName = 'This assignment';
 
 makeGrades.randomize = function () {
     var rv = Math.random();
@@ -814,21 +823,22 @@ makeGrades.LoopOverClass = function (maketemplate, gradebook, gradescale, assign
 
 makeGrades.writeMessage = function (grade, points, goupScore, godownScore, incomplete, ugrade, lgrade, igrade) {
     var message = "";
+    var assignmentName = makeGrades.assignmentName;
     if (grade.length > 0) {
-        message += "As of now, you have a(n) " + grade + " in the class.  This assignment is worth " + points.toFixed(2) + " points.";
+        message += "As of now, you have a(n) " + grade + " in the class.  " + capitalizeFirstLetter(assignmentName) + " is worth " + points.toFixed(2) + " points.";
     }
     if (goupScore !== false) {
         message += "  If you get more than " + goupScore.toFixed(2);
         message += interfaceClass.createPercent(goupScore, points);
-        message += " on this assignment, your class grade will increase to a(n) " + ugrade + ".";
+        message += " on " + assignmentName + ", your class grade will increase to a(n) " + ugrade + ".";
     }
     if (godownScore !== false) {
         message += "  If you get less than " + godownScore.toFixed(2);
         message += interfaceClass.createPercent(godownScore, points);
-        message += " on this assignment, your grade will drop at least one grade.";
+        message += " on " + assignmentName + ", your grade will drop at least one grade.";
     }
     if (incomplete !== false && igrade.length > 0) {
-        message += "  Not doing the assignment will result in a(n) " + igrade + ".";
+        message += "  Not doing " + assignmentName + " will result in a(n) " + igrade + ".";
     }
     return message;
 };

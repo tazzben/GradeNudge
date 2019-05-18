@@ -3,6 +3,10 @@
 
 <script>
 
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 var pastsheetsfunction = function () {
     google.script.run.withSuccessHandler(ShowPastSheets).LoadPastSheets();
 };
@@ -169,7 +173,9 @@ $(document).ready(function () {
         var mes = $('#emailbody').val();
         $('#emailbodymes').html(htmlForTextWithEmbeddedNewlines(mes));
     });
-
+    $('#assingnmentName').bind('input', function (){
+        reBuildMes();
+    });
 
     $(".messageoptions").change(function () {
         reBuildMes();
@@ -353,7 +359,8 @@ function DefaultGradeScaleFail(rdata) {
 }
 
 function reBuildMes() {
-    var message = 'As of now, you have a(n) [Grade] in the class. This assignment is worth [POINTS] points.';
+    var assignmentName = $("#assignmentName").val();
+    var message = 'As of now, you have a(n) [Grade] in the class. ' + capitalizeFirstLetter(assignmentName) + ' is worth [POINTS] points.';
 
     if ($("#gradeup").prop("checked") === true) {
         if ($("#percentage").prop("checked") === true) {
@@ -361,7 +368,7 @@ function reBuildMes() {
         } else {
             var percentageup = '';
         }
-        var message = message + '  If you get more than [X]' + percentageup + ' on this assignment, your class grade will increase to a(n) [Higher Grade].';
+        var message = message + '  If you get more than [X]' + percentageup + ' on ' + assignmentName + ', your class grade will increase to a(n) [Higher Grade].';
     }
 
     if ($("#gradedown").prop("checked") === true) {
@@ -370,11 +377,11 @@ function reBuildMes() {
         } else {
             var percentagedown = '';
         }
-        var message = message + '  If you get less than [Y]' + percentagedown + ' on this assignment, your grade will drop at least one grade.';
+        var message = message + '  If you get less than [Y]' + percentagedown + ' on ' + assignmentName + ', your grade will drop at least one grade.';
     }
 
     if ($("#incomplete").prop("checked") === true) {
-        var message = message + '  Not doing the assignment will result in a(n) [Lower Grade].';
+        var message = message + '  Not doing ' + assignmentName + ' will result in a(n) [Lower Grade].';
     }
 
     $("#nudgemes").text(message);
