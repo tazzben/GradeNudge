@@ -3,8 +3,8 @@
 
 <script>
 
-function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
+function capitalizeFirstLetter(s) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 var pastsheetsfunction = function () {
@@ -173,7 +173,10 @@ $(document).ready(function () {
         var mes = $('#emailbody').val();
         $('#emailbodymes').html(htmlForTextWithEmbeddedNewlines(mes));
     });
-    $('#assingnmentName').bind('input', function (){
+    $('#assignmentName').bind('input', function (){
+        if($('#assignmentName').val().trim() == ''){
+            $('#assignmentName').val('this assignment');
+        }
         reBuildMes();
     });
 

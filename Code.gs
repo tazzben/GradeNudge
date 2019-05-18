@@ -13,8 +13,8 @@ function getOAuthToken() {
     returnData.token = ScriptApp.getOAuthToken();
     return returnData;
 }
-function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
+function capitalizeFirstLetter(s) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function CheckData(data) {
