@@ -621,7 +621,7 @@ walkSheet.points = [];
 
 
 makeGrades = {};
-makeGrades.assignmentName = 'This assignment';
+makeGrades.assignmentName = 'this assignment';
 
 makeGrades.randomize = function () {
     var rv = Math.random();

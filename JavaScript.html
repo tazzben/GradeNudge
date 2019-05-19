@@ -174,9 +174,6 @@ $(document).ready(function () {
         $('#emailbodymes').html(htmlForTextWithEmbeddedNewlines(mes));
     });
     $('#assignmentName').bind('input', function (){
-        if($('#assignmentName').val().trim() == ''){
-            $('#assignmentName').val('this assignment');
-        }
         reBuildMes();
     });
 
@@ -362,7 +359,10 @@ function DefaultGradeScaleFail(rdata) {
 }
 
 function reBuildMes() {
-    var assignmentName = $("#assignmentName").val();
+    var assignmentName = $("#assignmentName").val().trim();
+    if(assignmentName == ''){
+        assignmentName = 'this assignment';
+    }
     var message = 'As of now, you have a(n) [Grade] in the class. ' + capitalizeFirstLetter(assignmentName) + ' is worth [POINTS] points.';
 
     if ($("#gradeup").prop("checked") === true) {
