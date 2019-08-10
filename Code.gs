@@ -698,7 +698,11 @@ makeGrades.LoopOverClass = function (maketemplate, gradebook, gradescale, assign
         }
         if (walkSheet.possiblePointsCol > -1) {
             if (walkSheet.possiblePoints[i] !== false && isFloat(walkSheet.possiblePoints[i])) {
-                numberOfPoints = walkSheet.possiblePoints[i];
+                if (walkSheet.possiblePoints[i] < 0){
+                    numberOfPoints = ClassNumberOfPoints + walkSheet.possiblePoints[i];
+                } else {
+                    numberOfPoints = walkSheet.possiblePoints[i];
+                }                
             }
         }
         if (noscore === true) {
