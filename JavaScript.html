@@ -86,12 +86,12 @@ function isFloat(n) {
     return n === Number(n) && n % 1 !== 0;
 }
 
-var showtotalPointsError = true;
 function checkTotalPoints (){
-    var tPoints = $('#tpoints').val();
-    var points = $('#points').val();
-    if (isInt(tPoints) && isInt(points) && points > tPoints && tPoints > 0 && points > 0 && showtotalPointsError ==  true){
-        showtotalPointsError = false;
+    
+    var tPoints = Number($('#tpoints').val());
+    var points = Number($('#points').val());
+
+    if (!isNaN(tPoints) && !isNaN(points) && points > tPoints && tPoints > 0 && points > 0){
         showError("Assignment Points is greater than the Total Points in the Class.  This could be correct at the beginning of the semester.  However, it is possible you reversed the Assignment Points and Total Points in the Class fields.");
     }
 }
@@ -109,6 +109,11 @@ $(document).ready(function () {
     $( "#tpoints" ).change(function() {
         checkTotalPoints ();
     });
+    
+    $( "#points" ).change(function() {
+        checkTotalPoints ();
+    });
+    
 });
 
 

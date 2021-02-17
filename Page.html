@@ -18,7 +18,7 @@
                    <label for="emailappend">Domain Name to Append to E-Mail Column</label>
                    <input type="text" name="emailappend" id="emailappend" value="" class="text ui-widget-content ui-corner-all" />
                </div>
-               <label for="emailappend">Total Points in Class Column</label>
+               <label for="pointscollist">Total Points in Class Column</label>
                <select name="pointscollist" id="pointscollist">
                </select>
                <input type="hidden" name="gradebookId" id="gradebookId" value ="" />
@@ -131,6 +131,6 @@
   </div>
   <?!= HtmlService.createHtmlOutputFromFile('JavaScript').getContent(); ?>
   <script src="https://apis.google.com/js/api.js"></script>
-  <script>google.load("picker", "1", {callback:function(){ pickerApiLoaded =!0; }});</script>
+  <script>gapi.load("picker", {callback:function(){ pickerApiLoaded =!0; }});</script>
 </body>
 </html>

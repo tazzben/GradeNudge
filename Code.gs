@@ -57,7 +57,7 @@ function SendGradebook(dataarray) {
                 listToDel.push(file.getId());
             }
         } else {
-            Drive.Files.remove(file.getId());
+            file.setTrashed(true);
         }
     }
 
@@ -77,12 +77,8 @@ function SendGradebook(dataarray) {
 
     if (savedfile !== false) {
         for (var i = 0; i < listToDel.length; i++) {
-            if (listToDel[i] !== savedfile) {
-                Drive.Files.remove(listToDel[i]);
-            } else {
-                f = DriveApp.getFileById(listToDel[i]);
-                f.setTrashed(true);
-            }
+            f = DriveApp.getFileById(listToDel[i]);
+            f.setTrashed(true);
         }
         var resultofprocessing = processUploadedFile.walkSheetHeader(savedfile);
         if (resultofprocessing) {
@@ -96,7 +92,8 @@ function SendGradebook(dataarray) {
             }
         }
         if (returnData.pointsCol === -1 || returnData.pointsCol.length === 0) {
-            Drive.Files.remove(savedfile);
+            f = DriveApp.getFileById(savedfile);
+            f.setTrashed(true);
         }
     }
 
@@ -476,9 +473,7 @@ interfaceClass.cleanUpFile = function (rResult, rangecheck) {
         if (f !== false) {
             if (interfaceClass.noemail && f.isTrashed()) {
                 f.setTrashed(false);
-            } else if (f.isTrashed() && rangecheck === false && rResult === true) {
-                Drive.Files.remove(f.getId());
-            }
+            } 
         }
     }
 };
@@ -702,7 +697,7 @@ makeGrades.LoopOverClass = function (maketemplate, gradebook, gradescale, assign
                     numberOfPoints = ClassNumberOfPoints + walkSheet.possiblePoints[i];
                 } else {
                     numberOfPoints = walkSheet.possiblePoints[i];
-                }                
+                }
             }
         }
         if (noscore === true) {
