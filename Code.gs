@@ -800,7 +800,11 @@ makeGrades.LoopOverClass = function (maketemplate, gradebook, gradescale, assign
             }
 
             if (sharedrive && validateEmail(studentemail)) {
-                des.addEditor(studentemail);
+                try {
+                  des.addEditor(studentemail);
+                } catch (error){
+                  console.error(error)
+                }
                 newEmailClass.sendEmail(subjectline, studentemail, (emailcontent + message));
             } else {
                 newEmailClass.sendEmailFile(des, subjectline, studentemail, (emailcontent + message));
@@ -847,11 +851,6 @@ var newFolderClass = {};
 newFolderClass.createFolder = function (folderName) {
     var folder = DriveApp.createFolder(folderName);
     return folder;
-};
-
-
-newFolderClass.shareFolder = function (folder, emailList) {
-    folder.addEditors(emailList);
 };
 
 walkSheet = {};
