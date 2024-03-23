@@ -16,11 +16,25 @@ function ShowYourEmaiAddress(rdata) {
     $("#getYourEmailAddress").text(rdata);
 };
 
+function UpdateReplyTo(rdata){
+    $("#replyToAddress").val(rdata);
+};
+
+function UpdateEmailName (rdata){
+    $("#emailName").val(rdata);
+};
+
 function ShowPastSheets(rdata) {
     var gb = false;
     var gs = false;
     if (rdata.YourEmailAddress){
         ShowYourEmaiAddress(rdata.YourEmailAddress);
+    }
+    if (rdata.replyToAddress){
+        UpdateReplyTo(rdata.replyToAddress);    
+    }
+    if (rdata.userName){
+        UpdateEmailName(rdata.userName);
     }
     if (rdata.gradebookName.length > 0 && rdata.gradebookID.length > 0) {
         gb = true;

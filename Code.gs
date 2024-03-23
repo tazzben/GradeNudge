@@ -205,9 +205,9 @@ processUploadedFile.findEmailDictionary = function (file) {
                     searchLastCol = i;
                 } else if ((commonSettings.email.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1) && searchEmailCol === -1) {
                     searchEmailCol = i;
-                } else if ((commonSettings.username.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1 || firstRow[i].toString().toLowerCase().trim().substr(firstRow[i].toString().trim().length - 8) == 'login id') && searchUserCol === -1) {
+                } else if ((commonSettings.username.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1 || firstRow[i].toString().toLowerCase().trim().substring(firstRow[i].toString().trim().length - 8) == 'login id') && searchUserCol === -1) {
                     searchUserCol = i;
-                } else if (commonSettings.points.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1 || firstRow[i].toString().toLowerCase().trim().substr(0, 5) == 'total' || firstRow[i].toString().toLowerCase().trim().substr(0, 12) == 'course total' || firstRow[i].toString().toLowerCase().trim().substr(0, 24) == 'blackboard points earned') {
+                } else if (commonSettings.points.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1 || firstRow[i].toString().toLowerCase().trim().substring(0, 5) == 'total' || firstRow[i].toString().toLowerCase().trim().substring(0, 12) == 'course total' || firstRow[i].toString().toLowerCase().trim().substring(0, 24) == 'blackboard points earned') {
                     return true;
                 } else if (firstRow[i].toString().toLowerCase().trim().length > 0) {
                     countNonCols = countNonCols + 1;
@@ -270,12 +270,12 @@ processUploadedFile.walkSheetHeader = function (file) {
                     templastnameCol = i;
                 } else if ((commonSettings.email.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1) && processUploadedFile.emailCol === -1) {
                     processUploadedFile.emailCol = i;
-                } else if (commonSettings.points.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1 || firstRow[i].toString().toLowerCase().trim().substr(0, 5) == 'total' || firstRow[i].toString().toLowerCase().trim().substr(0, 12) == 'course total' || firstRow[i].toString().toLowerCase().trim().substr(0, 24) == 'blackboard points earned') {
+                } else if (commonSettings.points.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1 || firstRow[i].toString().toLowerCase().trim().substring(0, 5) == 'total' || firstRow[i].toString().toLowerCase().trim().substring(0, 12) == 'course total' || firstRow[i].toString().toLowerCase().trim().substring(0, 24) == 'blackboard points earned') {
                     processUploadedFile.pointsCol.push({
                         name: firstRow[i].toString().trim(),
                         id: i
                     });
-                } else if ((commonSettings.username.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1 || firstRow[i].toString().toLowerCase().trim().substr(firstRow[i].toString().trim().length - 8) == 'login id') && tempusernameCol === -1) {
+                } else if ((commonSettings.username.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1 || firstRow[i].toString().toLowerCase().trim().substring(firstRow[i].toString().trim().length - 8) == 'login id') && tempusernameCol === -1) {
                     tempusernameCol = i;
                 }
             }
@@ -335,7 +335,7 @@ processUploadedFile.grabDomain = function () {
     var domain = "";
     var emailofuser = Session.getActiveUser().getEmail().toString().trim();
     if (emailofuser.indexOf("@") > -1) {
-        domain = emailofuser.substr(emailofuser.indexOf("@") + 1);
+        domain = emailofuser.substring(emailofuser.indexOf("@") + 1);
     }
     return domain;
 };
@@ -388,6 +388,8 @@ function LoadPastSheets() {
     var userProperties = PropertiesService.getUserProperties();
     var gradebookID = userProperties.getProperty('gradebookID');
     var gradescaleID = userProperties.getProperty('gradescaleID');
+    var replyToAddress = userProperties.getProperty('replyToAddress');
+    var userName = userProperties.getProperty('userName');
     var gbI = isFileExistById(gradebookID);
     var gsI = isFileExistById(gradescaleID);
     var returnData = {};
@@ -397,6 +399,10 @@ function LoadPastSheets() {
     returnData.gradescaleID = '';
     returnData.gradescaleName = '';
     returnData.gradescaleURL = '';
+    returnData.replyToAddress = '';
+    if (replyToAddress){
+        returnData.replyToAddress = replyToAddress;
+    }
     if (gbI !== false) {
         if (walkSheet.checkFileType(gbI.getId(), MimeType.GOOGLE_SHEETS)) {
             if (!gbI.isTrashed()) {
@@ -416,6 +422,7 @@ function LoadPastSheets() {
         }
     }
     returnData.YourEmailAddress = Session.getActiveUser().getEmail().toString().trim();
+    returnData.userName = userName;
     return returnData;
 }
 
@@ -455,6 +462,9 @@ interfaceClass.SavedstudentNameCol = -1;
 interfaceClass.SavedstudentEMailCol = -1;
 interfaceClass.Savedemailappend = "";
 interfaceClass.Savedpointscollist = -1;
+interfaceClass.userName = "";
+interfaceClass.replyToAddress = "";
+
 
 interfaceClass.createPercent = function (points, total) {
     if (interfaceClass.percentage === true) {
@@ -478,6 +488,7 @@ interfaceClass.cleanUpFile = function (rResult, rangecheck) {
     }
 };
 
+
 interfaceClass.submitWindow = function (data) {
     interfaceClass.templateFile = false;
     interfaceClass.gradebook = false;
@@ -488,6 +499,8 @@ interfaceClass.submitWindow = function (data) {
     interfaceClass.percentage = false;
     interfaceClass.random = false;
     interfaceClass.quota = MailApp.getRemainingDailyQuota();
+    var testReplyToAddress = data.replyToAddress.trim();
+    var testEmailName = data.emailName.trim();
     var assignmentPoints = data.points.trim();
     var numberOfPoints = data.tpoints.trim();
     var emailbody = data.emailbody.trim();
@@ -577,7 +590,14 @@ interfaceClass.submitWindow = function (data) {
             var ggh = walkSheet.getGradeHeader(interfaceClass.gradescale);
             var gh = walkSheet.getHeader(interfaceClass.gradebook);
             var userProperties = PropertiesService.getUserProperties();
-
+            if (testReplyToAddress.length > 0 && validateEmail(testReplyToAddress)){
+                interfaceClass.replyToAddress = testReplyToAddress;
+                userProperties.setProperty('replyToAddress', interfaceClass.replyToAddress);
+            }
+            if (testEmailName.length > 0){
+               interfaceClass.userName = testEmailName;
+               userProperties.setProperty('userName', interfaceClass.userName);
+            }
             if (ggh === false) {
                 return "The gradescale does not follow a format that nudge understands.";
             }
@@ -1033,7 +1053,7 @@ walkSheet.getHeader = function (file) {
                     walkSheet.nameCol = i;
                 } else if ((commonSettings.email.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1) && walkSheet.emailCol === -1) {
                     walkSheet.emailCol = i;
-                } else if ((commonSettings.points.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1 || firstRow[i].toString().toLowerCase().trim().substr(0, 5) == 'total') && walkSheet.pointsCol === -1) {
+                } else if ((commonSettings.points.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1 || firstRow[i].toString().toLowerCase().trim().substring(0, 5) == 'total') && walkSheet.pointsCol === -1) {
                     walkSheet.pointsCol = i;
                 } else if ((commonSettings.message.indexOf(firstRow[i].toString().toLowerCase().trim()) > -1) && walkSheet.messageCol === -1) {
                     walkSheet.messageCol = i;
@@ -1136,17 +1156,29 @@ newEmailClass.sendEmailFile = function (file, subjectLine, email, emailContent) 
         if (emailContent.length == 0) {
             emailContent = "Your assignment is attached to this e-mail."
         }
-
-        MailApp.sendEmail(email, subjectLine, emailContent, {
-            attachments: [file.getAs(MimeType.PDF)],
-            name: file.getName()
-        });
+        var options = {
+            attachments: [file.getAs(MimeType.PDF)]
+        };
+        if (interfaceClass.userName.length > 0){
+            options.name = interfaceClass.userName;
+        }
+        if (interfaceClass.replyToAddress.length > 0){
+            options.replyTo = interfaceClass.replyToAddress;
+        }
+        MailApp.sendEmail(email, subjectLine, emailContent, options);
     }
 };
 
 newEmailClass.sendEmail = function (subjectLine, email, emailContent) {
     if (emailContent.length > 0 && validateEmail(email)) {
         subjectLine = subjectLine || "(No subject)";
-        MailApp.sendEmail(email, subjectLine, emailContent);
+        var options = {};
+        if (interfaceClass.userName.length > 0){
+            options.name = interfaceClass.userName;
+        }
+        if (interfaceClass.replyToAddress.length > 0){
+            options.replyTo = interfaceClass.replyToAddress;
+        }
+        MailApp.sendEmail(email, subjectLine, emailContent, options);
     }
 };
