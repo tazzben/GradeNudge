@@ -17,6 +17,13 @@ function capitalizeFirstLetter(s) {
     return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+function flipName(nameText){
+    const nameArray = nameText.split(',');
+    let updatedName = nameArray.map(item => item.trim());
+    let reversedName = updatedName.reverse();
+    return reversedName.join(" ");
+}
+
 function CheckData(data) {
     return interfaceClass.submitWindow(data);
 }
@@ -593,11 +600,13 @@ interfaceClass.submitWindow = function (data) {
             if (testReplyToAddress.length > 0 && validateEmail(testReplyToAddress)){
                 interfaceClass.replyToAddress = testReplyToAddress;
                 userProperties.setProperty('replyToAddress', interfaceClass.replyToAddress);
+            } else if (testReplyToAddress.length == 0){
+                userProperties.setProperty('replyToAddress', '');
             }
-            if (testEmailName.length > 0){
-               interfaceClass.userName = testEmailName;
-               userProperties.setProperty('userName', interfaceClass.userName);
-            }
+            
+            interfaceClass.userName = testEmailName;
+            userProperties.setProperty('userName', interfaceClass.userName);
+            
             if (ggh === false) {
                 return "The gradescale does not follow a format that nudge understands.";
             }
@@ -795,7 +804,7 @@ makeGrades.LoopOverClass = function (maketemplate, gradebook, gradescale, assign
 
         var emailcontent = "";
         if (studentname.length > 0 && (emailbody.length > 0 || message.length > 0)) {
-            emailcontent += "Hi " + studentname + ",\r\n\r\n";
+            emailcontent += "Hi " + flipName(studentname) + ",\r\n\r\n";
         }
         emailcontent += emailbody;
 
@@ -813,7 +822,7 @@ makeGrades.LoopOverClass = function (maketemplate, gradebook, gradescale, assign
                 var body = doc.getBody();
                 body.appendHorizontalRule();
                 if (studentname.length > 0 && message.length > 0) {
-                    body.appendParagraph("Hi " + studentname + ",");
+                    body.appendParagraph("Hi " + flipName(studentname) + ",");
                 }
                 body.appendParagraph(message);
                 doc.saveAndClose();
