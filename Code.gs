@@ -1188,6 +1188,10 @@ newEmailClass.sendEmail = function (subjectLine, email, emailContent) {
         if (interfaceClass.replyToAddress.length > 0){
             options.replyTo = interfaceClass.replyToAddress;
         }
-        MailApp.sendEmail(email, subjectLine, emailContent, options);
+        if (options.name || options.replyTo) {
+            MailApp.sendEmail(email, subjectLine, emailContent, options);
+        } else {
+            MailApp.sendEmail(email, subjectLine, emailContent);
+        }
     }
 };
