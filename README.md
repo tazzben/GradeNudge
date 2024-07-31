@@ -4,4 +4,4 @@ Despite the proliferation of learning management systems, it is common for stude
 
 ## More about Grade Nudge:
 
-[Web App](https://script.google.com/macros/s/AKfycby8yRP4aBZEIqzIS2-6Nr5z6QMvQzgwPkfIqZFw2h0ITLUY5d9P4yyoSihAYn_Sa2Wr/exec) | [Website](https://bensresearch.com/nudge/) | [Instructions](http://downloads.bensresearch.com/nudge.pdf) | [YouTube Introduction](https://vimeo.com/914388260) | [Research](https://doi.org/10.1080/00220485.2017.1397570) 
+[Web App](https://script.google.com/macros/s/AKfycbxeZ-ioIcLnKH937symL4eenOXicTG4y60O6Pgxw16BFWIXOgq7-N4LyBlbpSevZdT9/exec) | [Website](https://bensresearch.com/nudge/) | [Instructions](http://downloads.bensresearch.com/nudge.pdf) | [Video Introduction](https://vimeo.com/914388260) | [Research](https://doi.org/10.1080/00220485.2017.1397570) 
