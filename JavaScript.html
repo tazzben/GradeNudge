@@ -43,7 +43,8 @@ function ShowPastSheets(rdata) {
         $('<a>', {
             text: rdata.gradebookName,
             href: rdata.gradebookURL,
-            target: "_blank"
+            target: "_blank",
+            rel: "noopener noreferrer"
         }).appendTo('#gradebookInfo');
     }
     if (rdata.gradescaleName.length > 0 && rdata.gradescaleID.length > 0) {
@@ -53,7 +54,8 @@ function ShowPastSheets(rdata) {
         $('<a>', {
             text: rdata.gradescaleName,
             href: rdata.gradescaleURL,
-            target: "_blank"
+            target: "_blank",
+            rel: "noopener noreferrer"
         }).appendTo('#gradescaleInfo');
     }
     if (gb === true || gs === true) {
@@ -379,7 +381,8 @@ function DefaultGradeScale(rdata) {
             $('<a>', {
                 text: 'Click here to open the file.',
                 href: rdata.gradescaleURL,
-                target: "_blank"
+                target: "_blank",
+                rel: "noopener noreferrer"
             }).appendTo('#progress');
         }
     }
@@ -476,7 +479,8 @@ function pickerTCallback(data) {
         $('<a>', {
             text: title,
             href: url,
-            target: "_blank"
+            target: "_blank",
+            rel: "noopener noreferrer"
         }).appendTo('#templateInfo');
     }
 }
@@ -519,7 +523,8 @@ function pickerGBCallback(data) {
         $('<a>', {
             text: title,
             href: url,
-            target: "_blank"
+            target: "_blank",
+            rel: "noopener noreferrer"
         }).appendTo('#gradebookInfo');
     }
 }
@@ -557,7 +562,8 @@ function pickerGSCallback(data) {
         $('<a>', {
             text: title,
             href: url,
-            target: "_blank"
+            target: "_blank",
+            rel: "noopener noreferrer"
         }).appendTo('#gradescaleInfo');
     }
 }
