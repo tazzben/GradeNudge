@@ -110,7 +110,7 @@
     
     <div class='advanced'>
        <div id='adv' name='adv'>
-          <p>Customize assingment name:</p>
+          <p>Customize assignment name:</p>
           <p><input type='text' name='assignmentName' id='assignmentName' placeholder='this assignment' /></p>
           <p>Limit the gradebook range from:</p>
           <p><input type='number' name='lStart' id='lStart' placeholder='All' /> to <input type='number' name='lEnd' id='lEnd' placeholder='All' /></p>
@@ -118,6 +118,8 @@
           <p><input type='text' name='emailName' id='emailName' /></p>
           <p>Set reply-to address:</p>
           <p><input type='text' name='replyToAddress' id='replyToAddress' /></p>
+          <p>Content after nudge message:</p>
+          <textarea name='emailbodyAfter' id='emailbodyAfter' placeholder='Additional message after the grade prediction'></textarea>
        </div>
        <a href='#' id='advset'>Show advanced settings...</a>
     </div>
@@ -127,6 +129,7 @@
         <div id='greating' class='nudge'>Hi [Name],</div>
         <div id='emailbodymes' class='nudge'></div>
         <div id='nudgemes' class='nudge'></div>
+        <div id='emailbodyAfterMes' class='nudge'></div>
     </div>
   </div>
   <a href="https://bensresearch.com/nudge" target="_blank" rel="noopener noreferrer">Help and Documentation &gt;</a>

@@ -207,6 +207,10 @@ $(document).ready(function () {
         var mes = $('#emailbody').val();
         $('#emailbodymes').html(htmlForTextWithEmbeddedNewlines(mes));
     });
+    $('#emailbodyAfter').bind('input', function () {
+        var mes = $('#emailbodyAfter').val();
+        $('#emailbodyAftermes').html(htmlForTextWithEmbeddedNewlines(mes));
+    });
     $('#assignmentName').bind('input', function (){
         reBuildMes();
     });

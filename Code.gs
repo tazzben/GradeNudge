@@ -511,6 +511,7 @@ interfaceClass.submitWindow = function (data) {
     var assignmentPoints = data.points.trim();
     var numberOfPoints = data.tpoints.trim();
     var emailbody = data.emailbody.trim();
+    var emailbodyAfter = data.emailbodyAfter.trim();
     var subjectline = data.subjectline.trim();
 
     var incomplete = (data.incomplete === "on") ? true : false;
@@ -617,11 +618,11 @@ interfaceClass.submitWindow = function (data) {
             userProperties.setProperty('gradebookID', interfaceClass.gradebook);
             userProperties.setProperty('gradescaleID', interfaceClass.gradescale);
             if (interfaceClass.templateFile === false && notemp === true) {
-                rlc = makeGrades.LoopOverClass(false, gh, ggh, parseFloat(assignmentPoints), parseFloat(numberOfPoints), sharedrive, incomplete, gradeup, gradedown, randomize, subjectline, emailbody, rangecheck, start, end, false);
+                rlc = makeGrades.LoopOverClass(false, gh, ggh, parseFloat(assignmentPoints), parseFloat(numberOfPoints), sharedrive, incomplete, gradeup, gradedown, randomize, subjectline, emailbody, emailbodyAfter, rangecheck, start, end, false);
                 interfaceClass.cleanUpFile(rlc, rangecheck);
                 return rlc;
             } else if (interfaceClass.templateFile !== false) {
-                rlc = makeGrades.LoopOverClass(true, gh, ggh, parseFloat(assignmentPoints), parseFloat(numberOfPoints), sharedrive, incomplete, gradeup, gradedown, randomize, subjectline, emailbody, rangecheck, start, end, false);
+                rlc = makeGrades.LoopOverClass(true, gh, ggh, parseFloat(assignmentPoints), parseFloat(numberOfPoints), sharedrive, incomplete, gradeup, gradedown, randomize, subjectline, emailbody, emailbodyAfter, rangecheck, start, end, false);
                 interfaceClass.cleanUpFile(rlc, rangecheck);
                 return rlc;
             } else {
@@ -668,7 +669,7 @@ makeGrades.saveMessage = function (gradebook, i, message) {
     }
 };
 
-makeGrades.LoopOverClass = function (maketemplate, gradebook, gradescale, assignmentPoints, ClassNumberOfPoints, sharedrive, incomplete, gradeup, gradedown, randomize, subjectline, emailbody, rangecheck, start, end, noscore) {
+makeGrades.LoopOverClass = function (maketemplate, gradebook, gradescale, assignmentPoints, ClassNumberOfPoints, sharedrive, incomplete, gradeup, gradedown, randomize, subjectline, emailbody, emailbodyAfter, rangecheck, start, end, noscore) {
     if (maketemplate !== false) {
         var foldername = DriveApp.getFileById(interfaceClass.templateFile).getName();
         var folder = newFolderClass.createFolder(foldername);
@@ -800,6 +801,12 @@ makeGrades.LoopOverClass = function (maketemplate, gradebook, gradescale, assign
 
         } else {
             var message = "";
+        }
+        if (emailbodyAfter.length > 0) {
+            if (message.length > 0) {
+                message += "\r\n\r\n";
+            }
+            message += emailbodyAfter;
         }
 
         var emailcontent = "";
