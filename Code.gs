@@ -340,6 +340,11 @@ processUploadedFile.walkSheetHeader = function (file) {
 };
 processUploadedFile.grabDomain = function () {
     var domain = "";
+    var userProperties = PropertiesService.getUserProperties();
+    var savedDomain = userProperties.getProperty('domainToAppend');
+    if (savedDomain) {
+        return savedDomain;
+    }
     var emailofuser = Session.getActiveUser().getEmail().toString().trim();
     if (emailofuser.indexOf("@") > -1) {
         domain = emailofuser.substring(emailofuser.indexOf("@") + 1);
@@ -496,6 +501,14 @@ interfaceClass.cleanUpFile = function (rResult, rangecheck) {
 };
 
 
+interfaceClass.saveDomainToAppend = function (domain) {
+    var userProperties = PropertiesService.getUserProperties();
+    var cleanDomain = domain.trim();
+    if (cleanDomain.length > 0) {
+        userProperties.setProperty('domainToAppend', cleanDomain);
+    }
+};
+
 interfaceClass.submitWindow = function (data) {
     interfaceClass.templateFile = false;
     interfaceClass.gradebook = false;
@@ -536,6 +549,7 @@ interfaceClass.submitWindow = function (data) {
                 interfaceClass.Savedpointscollist = parseInt(data.Savedpointscollist, 10);
             }
             interfaceClass.Savedemailappend = data.Savedemailappend;
+            interfaceClass.saveDomainToAppend(data.Savedemailappend);
         }
     }
 
