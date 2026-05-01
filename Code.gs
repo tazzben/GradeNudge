@@ -109,8 +109,8 @@ function SendGradebook(dataarray) {
 
 var commonSettings = {};
 commonSettings.fullName = ['name', 'student', 'student name', 'full name', 'full names', 'names', 'students', 'student names'];
-commonSettings.firstName = ['first', 'first name', 'first names'];
-commonSettings.lastName = ['last', 'last name', 'last names'];
+commonSettings.firstName = ['first', 'first name', 'first names', 'firstname', 'firstnames'];
+commonSettings.lastName = ['last', 'last name', 'last names', 'lastname', 'lastnames'];
 commonSettings.email = ['email', 'e-mail', 'e-mail address', 'email address', 'e-mail addresses', 'email addresses'];
 commonSettings.points = ['points', 'point', 'current points', 'final points'];
 commonSettings.replace = ['replace', 'replacement', 'substitute'];
