@@ -53,3 +53,11 @@ jobs:
         uses: github/codeql-action/analyze@v4
         with:
           category: "/language:javascript-typescript"
+          output: sarif-results
+
+      - name: Upload SARIF report as downloadable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-sarif-report
+          path: sarif-results/*.sarif
+          retention-days: 90
