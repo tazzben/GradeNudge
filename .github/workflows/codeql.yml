@@ -1,0 +1,55 @@
+name: "CodeQL Security Scan"
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  schedule:
+    - cron: '0 6 * * 1' # Runs every Monday at 6:00 AM UTC
+
+jobs:
+  analyze:
+    name: Analyze Apps Script
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Convert .gs files to .js in a temp folder so CodeQL indexes them
+      - name: Prepare .gs files for JavaScript analysis
+        run: |
+          mkdir -p .codeql-scan
+          find . -path ./.codeql-scan -prune -o -name "*.gs" -exec sh -c '
+            for f; do
+              dest=".codeql-scan/${f#./}"
+              mkdir -p "$(dirname "$dest")"
+              cp "$f" "${dest%.gs}.js"
+            done
+          ' sh {} +
+          find . -path ./.codeql-scan -prune -o \( -name "*.js" -o -name "*.html" \) -exec sh -c '
+            for f; do
+              dest=".codeql-scan/${f#./}"
+              mkdir -p "$(dirname "$dest")"
+              cp "$f" "$dest"
+            done
+          ' sh {} +
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-extended
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-typescript"
